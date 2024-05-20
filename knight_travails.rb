@@ -54,6 +54,7 @@ class Tree
     node
   end
 
+  # The find uses a lever order traversal to find the first match
   def find(coordinate, queue = [@root])
     return if queue.empty?
 
@@ -80,8 +81,8 @@ class Tree
 end
 
 class ChessPiece
-  def initialize
-    @piece = Knight
+  def initialize(piece = Knight)
+    @piece = piece
   end
 
   def path(start_position, end_position)
@@ -96,7 +97,76 @@ class ChessPiece
     path
   end
 
+  class Rook
+    def self.pattern
+      result = []
+      (-7..+7).each do |i|
+        next if i.zero?
+
+        result << [i, 0]
+        result << [0, i]
+      end
+      result.sort
+    end
+
+    MOVING_PATTERN = pattern.freeze
+  end
+
   class Knight
-    MOVING_PATTERN = [[+2, 1], [+2, -1], [+1, +2], [+1, -2], [-1, +2], [-1, -2], [-2, 1], [-2, -1]].freeze
+    MOVING_PATTERN = [[+2, 1], [+2, -1], [+1, +2], [+1, -2], [-1, +2], [-1, -2], [-2, 1], [-2, -1]].sort.freeze
+  end
+
+  class Bishop
+    def self.pattern
+      result = []
+      (-7..+7).each do |i|
+        next if i.zero?
+
+        result << [i, i]
+        result << [-i, i]
+      end
+      result.sort
+    end
+
+    MOVING_PATTERN = pattern.freeze
+  end
+
+  class Queen
+    def self.pattern
+      result = []
+      (-7..+7).each do |i|
+        next if i.zero?
+
+        result << [i, i]
+        result << [-i, i]
+        result << [0, i]
+        result << [i, 0]
+      end
+      result.sort
+    end
+
+    MOVING_PATTERN = pattern.freeze
+  end
+
+  class King
+    def self.pattern
+      result = []
+      (-1..+1).each do |i|
+        next if i.zero?
+
+        result << [i, i]
+        result << [-i, i]
+        result << [0, i]
+        result << [i, 0]
+      end
+      result.sort
+    end
+
+    MOVING_PATTERN = pattern.freeze
+  end
+
+  class Pawn
+    MOVING_PATTERN = [[0, 1]].freeze
+    KILLING_PATTERN = [[-1, 1], [1, 1]].freeze
   end
 end
