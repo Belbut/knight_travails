@@ -3,7 +3,8 @@ require './grid'
 # Coordinate is a array with x and y information = [x,y]
 #
 class Node
-  attr_reader :coordinate, :children, :parent
+  attr_reader :coordinate, :children
+  attr_accessor :parent
 
   def initialize(coordinate, children, parent = nil)
     @coordinate = coordinate
@@ -16,14 +17,14 @@ class Node
   end
 
   def inspect
-    "N:#{coordinate.inspect}(#{children.size})"
+    "N:#{coordinate.inspect}(#{children.size}) @ #{parent}"
   end
 end
 
 class Tree
-  def initialize(coordinate)
+  def initialize(coordinate, moving_pattern = ChessPiece::Knight::MOVING_PATTERN)
     @grid = Grid.new(8, 8)
-    @moving_pattern = ChessPiece::Knight::MOVING_PATTERN
+    @moving_pattern = moving_pattern
     @root = build_tree(coordinate)
   end
 
@@ -42,7 +43,25 @@ class Tree
         accumulator
       end
     end
-    Node.new(coordinate, all_possible.map { |coord| build_tree(coord) })
+    all_children_nodes = []
+    node = Node.new(coordinate, all_possible.map do |coord|
+      temp = build_tree(coord)
+      all_children_nodes.append(temp) unless temp.nil?
+      temp
+    end)
+    all_children_nodes.each { |child_node| child_node.parent = node }
+
+    node
+  end
+
+  def find(coordinate, queue = [@root])
+    return if queue.empty?
+
+    current_node = queue.shift
+    return current_node if current_node.coordinate == coordinate
+
+    queue.append(*current_node.children)
+    find(coordinate, queue)
   end
 
   def print_simple(queue = [@root])
@@ -60,7 +79,23 @@ class Tree
   end
 end
 
-module ChessPiece
+class ChessPiece
+  def initialize
+    @piece = Knight
+  end
+
+  def path(start_position, end_position)
+    movement_tree = Tree.new(start_position, @piece::MOVING_PATTERN)
+    check_node = movement_tree.find(end_position)
+    path = []
+
+    until check_node.nil?
+      path.prepend(check_node.coordinate)
+      check_node = check_node.parent
+    end
+    path
+  end
+
   class Knight
     MOVING_PATTERN = [[+2, 1], [+2, -1], [+1, +2], [+1, -2], [-1, +2], [-1, -2], [-2, 1], [-2, -1]].freeze
   end

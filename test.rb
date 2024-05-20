@@ -1,4 +1,5 @@
 require './knight_travails'
 
-tree = Tree.new([0,0])
-tree.print_simple
+knight = ChessPiece.new
+
+p knight.path([0,0],[7,7])
